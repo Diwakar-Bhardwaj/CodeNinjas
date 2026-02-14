@@ -1,77 +1,85 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// Create Cart Context
+// Create Transactions Context
 const CartContext = createContext();
 
-// Cart Provider Component
+// Transactions Provider Component
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  const [transactions, setTransactions] = useState([]);
 
-  // Load cart from localStorage on mount
+  // Load transactions from localStorage on mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
+    const savedTransactions = localStorage.getItem("transactions");
+    if (savedTransactions) {
       try {
-        setCart(JSON.parse(savedCart));
+        setTransactions(JSON.parse(savedTransactions));
       } catch (err) {
-        console.error("Failed to load cart:", err);
+        console.error("Failed to load transactions:", err);
       }
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save transactions to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+  }, [transactions]);
 
-  const addToCart = (product) => {
-    const existingItem = cart.find((item) => item._id === product._id);
-
-    if (existingItem) {
-      // If item already in cart, increase quantity
-      setCart(
-        cart.map((item) =>
-          item._id === product._id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      );
-    } else {
-      // Add new item to cart
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
+  const addTransaction = (product, type) => {
+    // type: 'lend' or 'borrow'
+    const transaction = {
+      ...product,
+      transactionType: type,
+      transactionId: Date.now() + Math.random(),
+      addedAt: new Date().toISOString(),
+    };
+    setTransactions([...transactions, transaction]);
   };
 
-  const removeFromCart = (productId) => {
-    setCart(cart.filter((item) => item._id !== productId));
+  const removeTransaction = (transactionId) => {
+    setTransactions(transactions.filter((t) => t.transactionId !== transactionId));
   };
 
-  const updateQuantity = (productId, quantity) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-    } else {
-      setCart(
-        cart.map((item) =>
-          item._id === productId ? { ...item, quantity } : item
-        )
-      );
-    }
+  const updateTransaction = (transactionId, updates) => {
+    setTransactions(
+      transactions.map((t) =>
+        t.transactionId === transactionId ? { ...t, ...updates } : t
+      )
+    );
   };
 
-  const clearCart = () => {
-    setCart([]);
+  const clearTransactions = () => {
+    setTransactions([]);
   };
+
+  const getLendCount = () => {
+    return transactions.filter((t) => t.transactionType === "lend").length;
+  };
+
+  const getBorrowCount = () => {
+    return transactions.filter((t) => t.transactionType === "borrow").length;
+  };
+
+  const getTotalCount = () => transactions.length;
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}
+      value={{
+        transactions,
+        addTransaction,
+        removeTransaction,
+        updateTransaction,
+        clearTransactions,
+        getLendCount,
+        getBorrowCount,
+        getTotalCount,
+      }}
     >
       {children}
     </CartContext.Provider>
   );
 };
 
-// Custom Hook to use Cart Context
+// Custom Hook to use Transactions Context
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
