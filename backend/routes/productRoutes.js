@@ -8,16 +8,39 @@ const router = express.Router();
 
 // Middleware to verify token and get user ID
 const verifyToken = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ msg: "No token provided" });
+  const authHeader = req.headers.authorization;
+  console.log("🔐 Auth header:", authHeader ? "Present" : "Missing");
+  
+  if (!authHeader) {
+    console.error("❌ No authorization header");
+    return res.status(401).json({ msg: "No authorization header provided" });
+  }
+
+  const parts = authHeader.split(" ");
+  if (parts.length !== 2 || parts[0] !== "Bearer") {
+    console.error("❌ Invalid authorization format:", authHeader);
+    return res.status(401).json({ msg: "Invalid authorization format. Use 'Bearer <token>'" });
+  }
+
+  const token = parts[1];
+  console.log("🔑 Token received (first 20 chars):", token.substring(0, 20) + "...");
 
   try {
     const jwt = require("jsonwebtoken");
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET;
+    
+    if (!secret) {
+      console.error("❌ JWT_SECRET not defined in environment");
+      return res.status(500).json({ msg: "Server configuration error: JWT_SECRET not set" });
+    }
+
+    const decoded = jwt.verify(token, secret);
+    console.log("✅ Token verified for user:", decoded.id);
     req.userId = decoded.id;
     next();
   } catch (err) {
-    res.status(401).json({ msg: "Invalid token" });
+    console.error("❌ Token verification failed:", err.message);
+    res.status(401).json({ msg: "Invalid or expired token", error: err.message });
   }
 };
 
@@ -40,11 +63,22 @@ const upload = multer({ storage });
 // Upload a new item
 router.post("/upload", verifyToken, upload.single("image"), async (req, res) => {
   try {
+    console.log("📤 Upload request received");
+    console.log("📝 User ID:", req.userId);
+    console.log("📁 File:", req.file ? `${req.file.filename} (${req.file.size} bytes)` : "No file");
+    
     if (!req.file) {
+      console.error("❌ No file uploaded");
       return res.status(400).json({ msg: "No file uploaded" });
     }
 
     const { title, description, category, city, maxDuration } = req.body;
+    
+    if (!title || !description || !category || !city) {
+      console.error("❌ Missing required fields:", { title: !!title, description: !!description, category: !!category, city: !!city });
+      return res.status(400).json({ msg: "Missing required fields" });
+    }
+
     const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
 
     const product = new Product({
@@ -58,6 +92,7 @@ router.post("/upload", verifyToken, upload.single("image"), async (req, res) => 
       owner: req.userId,
       available: true,
     });
+    
     await product.save();
     await product.populate("owner", "email firstName lastName profileDescription");
 
@@ -72,7 +107,8 @@ router.post("/upload", verifyToken, upload.single("image"), async (req, res) => 
       product: product.toObject(),
     });
   } catch (err) {
-    console.error("❌ Upload failed:", err);
+    console.error("❌ Upload failed:", err.message);
+    console.error("Error details:", err);
     res.status(500).json({ msg: "Upload failed", error: err.message });
   }
 });

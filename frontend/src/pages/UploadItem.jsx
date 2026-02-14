@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -11,9 +11,56 @@ const UploadItem = () => {
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(true);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  // Auto-detect user's location on component mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log("📍 Location detected:", latitude, longitude);
+          
+          try {
+            // Use Nominatim (OpenStreetMap) for reverse geocoding
+            const response = await axios.get(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            
+            // Extract city/town name from the response
+            const addressData = response.data.address;
+            const detectedCity = 
+              addressData.city || 
+              addressData.town || 
+              addressData.village || 
+              addressData.county ||
+              addressData.state || 
+              "Unknown";
+            
+            console.log("🏙️ City detected:", detectedCity);
+            setCity(detectedCity);
+          } catch (error) {
+            console.error("❌ Reverse geocoding error:", error);
+            setCity(""); // Leave empty if geocoding fails
+          } finally {
+            setLocationLoading(false);
+          }
+        },
+        (error) => {
+          console.warn("⚠️ Geolocation error:", error.message);
+          setLocationLoading(false);
+          // User will need to enter city manually if permission denied
+        },
+        { timeout: 5000 }
+      );
+    } else {
+      console.warn("Geolocation not supported");
+      setLocationLoading(false);
+    }
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -51,6 +98,11 @@ const UploadItem = () => {
 
     try {
       setLoading(true);
+      
+      console.log("📤 Uploading item:", { title, category, city });
+      console.log("🔑 Token present:", !!token);
+      console.log("🔑 Token (first 20 chars):", token ? token.substring(0, 20) + "..." : "No token");
+      
       const res = await axios.post(
         "http://localhost:5000/api/products/upload",
         formData,
@@ -62,6 +114,7 @@ const UploadItem = () => {
         }
       );
 
+      console.log("✅ Upload successful:", res.data);
       alert("Item uploaded successfully!");
 
       // Clear form
@@ -76,7 +129,9 @@ const UploadItem = () => {
       // Redirect to home page
       navigate("/");
     } catch (err) {
-      console.error(err);
+      console.error("❌ Upload error:", err);
+      console.error("Error status:", err.response?.status);
+      console.error("Error response:", err.response?.data);
       alert(
         err.response?.data?.msg || "Upload failed"
       );
@@ -129,15 +184,31 @@ const UploadItem = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-semibold mb-2 text-gray-700">City *</label>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">
+              City {locationLoading && "🔍"}
+            </label>
             <input
               type="text"
-              placeholder="e.g., New York"
-              className="w-full border-2 border-gray-300 p-3 rounded-lg focus:border-blue-500 focus:outline-none"
+              placeholder={locationLoading ? "Detecting location..." : "Your city (auto-detected)"}
+              className={`w-full border-2 p-3 rounded-lg focus:outline-none ${
+                locationLoading
+                  ? "bg-gray-100 border-gray-300 cursor-wait"
+                  : "border-gray-300 focus:border-blue-500"
+              }`}
               value={city}
               onChange={(e) => setCity(e.target.value)}
+              disabled={locationLoading}
               required
             />
+            {locationLoading && (
+              <p className="text-xs text-gray-500 mt-1">📍 Auto-detecting your location...</p>
+            )}
+            {!locationLoading && city && (
+              <p className="text-xs text-green-600 mt-1">✅ Location detected: {city}</p>
+            )}
+            {!locationLoading && !city && (
+              <p className="text-xs text-orange-600 mt-1">⚠️ Please enter your city manually</p>
+            )}
           </div>
         </div>
 
