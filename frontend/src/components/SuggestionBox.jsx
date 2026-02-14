@@ -1,23 +1,27 @@
 import React from "react";
-import { FaCheckCircle, FaExclamationTriangle, FaClock } from "react-icons/fa";
+import { FaCheckCircle, FaLightbulb, FaInfoCircle, FaGift, FaHandshake } from "react-icons/fa";
 
 const icons = {
-  BUY: <FaCheckCircle className="text-green-500" />,
-  WAIT: <FaClock className="text-yellow-500" />,
-  SKIP: <FaExclamationTriangle className="text-red-500" />,
+  TIP: <FaLightbulb className="text-blue-500" />,
+  INFO: <FaInfoCircle className="text-blue-500" />,
+  LEND: <FaGift className="text-green-500" />,
+  BORROW: <FaHandshake className="text-purple-500" />,
+  SUCCESS: <FaCheckCircle className="text-green-500" />,
 };
 
 const colors = {
-  BUY: "bg-green-100 border-green-400 text-green-800",
-  WAIT: "bg-yellow-100 border-yellow-400 text-yellow-800",
-  SKIP: "bg-red-100 border-red-400 text-red-800",
+  TIP: "bg-blue-50 border-blue-300 text-blue-800",
+  INFO: "bg-blue-50 border-blue-300 text-blue-800",
+  LEND: "bg-green-50 border-green-300 text-green-800",
+  BORROW: "bg-purple-50 border-purple-300 text-purple-800",
+  SUCCESS: "bg-green-50 border-green-300 text-green-800",
 };
 
-const SuggestionBox = ({ type, title, text }) => {
+const SuggestionBox = ({ type = "INFO", title, text }) => {
   return (
     <div className={`border-l-4 p-4 rounded-md ${colors[type]}`}>
       <div className="flex items-center">
-        <div className="text-2xl mr-3">{icons[type]}</div>
+        <div className="text-2xl mr-3">{icons[type] || icons.INFO}</div>
         <div>
           <p className="font-bold">{title}</p>
           <p className="text-sm">{text}</p>

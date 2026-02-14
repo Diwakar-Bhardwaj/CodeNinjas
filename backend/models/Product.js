@@ -1,10 +1,26 @@
 const mongoose = require("mongoose");
 
-const ProductSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  category: { type: String, required: true },
-  image: { type: String, required: true }, // just the filename
-  createdAt: { type: Date, default: Date.now }
-});
+const productSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: String,
+    category: String,
+    city: String,
+    imageUrl: String,
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    available: { type: Boolean, default: true },
+    maxDuration: { type: Number, default: 7 }, // days
+    reviews: [
+      {
+        reviewer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        rating: { type: Number, min: 1, max: 5 },
+        comment: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
+    image: String, // filename for backwards compatibility
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("Product", ProductSchema);
+module.exports = mongoose.model("Product", productSchema);

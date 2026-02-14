@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaExchangeAlt } from "react-icons/fa";
+import { useCart } from "../services/CartContext";
 
-const Header = ({ count = 0 }) => {
+const Header = () => {
   const [email, setEmail] = useState(localStorage.getItem("email"));
+  const { getTotalCount } = useCart();
+  const transactionCount = getTotalCount();
 
   useEffect(() => {
     const handleStorage = () => {
@@ -11,8 +14,6 @@ const Header = ({ count = 0 }) => {
     };
 
     window.addEventListener("storage", handleStorage);
-
-    // ALSO update on page load
     setEmail(localStorage.getItem("email"));
 
     return () => window.removeEventListener("storage", handleStorage);
@@ -46,15 +47,17 @@ const Header = ({ count = 0 }) => {
         {/* Right */}
         <div className="flex items-center space-x-5">
 
-          {/* Cart */}
-          <Link to="/cart" className="relative">
-            <FaShoppingCart className="text-3xl text-gray-600" />
-            {count > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                {count}
-              </span>
-            )}
-          </Link>
+          {/* Transactions */}
+          {token && (
+            <Link to="/transactions" className="relative">
+              <FaExchangeAlt className="text-3xl text-gray-600 hover:text-primary transition" />
+              {transactionCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                  {transactionCount}
+                </span>
+              )}
+            </Link>
+          )}
 
           {/* Auth */}
           {!token ? (
