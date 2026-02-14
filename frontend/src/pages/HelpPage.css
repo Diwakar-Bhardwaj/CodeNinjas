@@ -1,0 +1,96 @@
+.help-container {
+  min-height: 100vh;
+  padding: 2rem 10%;
+  background-color: #fcfdfe;
+  font-family: 'Inter', sans-serif;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.help-content {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+/* Form Styling */
+.form-section h1 { font-size: 2.5rem; margin-bottom: 10px; color: #333; }
+.highlight { color: #ff6b6b; } /* Soft red for urgency */
+
+.complaint-form {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.input-group input, .input-group select, .input-group textarea {
+  padding: 12px;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.input-group input:focus { border-color: #ff6b6b; outline: none; }
+
+.submit-btn {
+  background: #333;
+  color: white;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* Info Cards */
+.info-section { display: flex; flex-direction: column; gap: 20px; }
+
+.info-card {
+  padding: 1.5rem;
+  border-radius: 20px;
+}
+
+.pastel-yellow { background-color: #fff9db; color: #856404; }
+.pastel-purple { background-color: #f3f0ff; color: #5f3dc4; }
+
+.info-card h4 { margin-bottom: 10px; }
+.info-card ul { padding-left: 20px; font-size: 0.9rem; }
+
+/* Success State */
+.success-message {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.check-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+  .help-content { grid-template-columns: 1fr; gap: 40px; }
+}
