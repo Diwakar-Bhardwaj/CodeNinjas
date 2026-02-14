@@ -6,7 +6,7 @@ const AddToCartButton = ({ product }) => {
   const { cart, addToCart } = useCart();
 
   // Check if this product already exists in cart
-  const inCart = cart.some((item) => item.id === product.id);
+  const inCart = cart.some((item) => item._id === product._id);
 
   return (
     <button

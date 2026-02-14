@@ -35,8 +35,8 @@ const Header = ({ count = 0 }) => {
           <Link to="/" className="text-gray-600 hover:text-primary">
             Home
           </Link>
-          <Link to="/deals" className="text-gray-600 hover:text-primary">
-            Deals
+          <Link to="/upload" className="text-gray-600 hover:text-primary">
+            Upload iteam
           </Link>
           <Link to="/about" className="text-gray-600 hover:text-primary">
             About

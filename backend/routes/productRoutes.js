@@ -1,33 +1,70 @@
 const express = require("express");
-const router = express.Router();
-const upload = require("../middleware/upload");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const Product = require("../models/Product");
+const router = express.Router();
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-// Upload Product + Image
+// Configure multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage });
+
+// Upload a new item
 router.post("/upload", upload.single("image"), async (req, res) => {
   try {
-    const { title, price } = req.body;
+    if (!req.file) {
+      return res.status(400).json({ msg: "No file uploaded" });
+    }
 
-    const newProduct = new Product({
+    const { title, category } = req.body;
+    const product = new Product({
       title,
-      price,
+      category,
       image: req.file.filename,
     });
+    await product.save();
 
-    await newProduct.save();
+    console.log("✅ Product uploaded:", {
+      id: product._id,
+      filename: req.file.filename,
+      imageUrl: `http://localhost:5000/uploads/${req.file.filename}`,
+    });
 
-    res.json({ message: "Product Uploaded", product: newProduct });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.json({
+      msg: "Item uploaded successfully",
+      product: {
+        ...product.toObject(),
+        imageUrl: `http://localhost:5000/uploads/${req.file.filename}`,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Upload failed:", err);
+    res.status(500).json({ msg: "Upload failed", error: err.message });
   }
 });
 
-
-// Get All Products
+// Get all products (optionally by category)
 router.get("/", async (req, res) => {
-  const products = await Product.find();
-  res.json(products);
+  const { category } = req.query;
+  try {
+    const filter = category ? { category } : {};
+    const products = await Product.find(filter).sort({ createdAt: -1 });
+    res.json({ products });
+  } catch (err) {
+    res.status(500).json({ msg: "Fetch failed", error: err.message });
+  }
 });
 
 module.exports = router;

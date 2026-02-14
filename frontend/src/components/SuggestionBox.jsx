@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaCheckCircle, FaExclamationTriangle, FaClock } from 'react-icons/fa';
+import React from "react";
+import { FaCheckCircle, FaExclamationTriangle, FaClock } from "react-icons/fa";
 
 const icons = {
   BUY: <FaCheckCircle className="text-green-500" />,
@@ -8,9 +8,9 @@ const icons = {
 };
 
 const colors = {
-  BUY: 'bg-green-100 border-green-400 text-green-800',
-  WAIT: 'bg-yellow-100 border-yellow-400 text-yellow-800',
-  SKIP: 'bg-red-100 border-red-400 text-red-800',
+  BUY: "bg-green-100 border-green-400 text-green-800",
+  WAIT: "bg-yellow-100 border-yellow-400 text-yellow-800",
+  SKIP: "bg-red-100 border-red-400 text-red-800",
 };
 
 const SuggestionBox = ({ type, title, text }) => {
