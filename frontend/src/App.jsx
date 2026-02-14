@@ -6,11 +6,13 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 
+
 // AUTH PAGES
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-
+import AboutPage from "./pages/AboutPage";
+import HelpPage from "./pages/HelpPage";
 // UPLOAD PAGE
 import UploadItem from "./pages/UploadItem";
 
@@ -31,7 +33,8 @@ function AppContent() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/help" element={<HelpPage />} />
           {/* UPLOAD ROUTE */}
           <Route path="/upload" element={<UploadItem />} />
         </Routes>
