@@ -183,7 +183,7 @@ const Transactions = () => {
                       <div className="flex items-center gap-1 mt-1">
                         <span className="text-yellow-400">⭐</span>
                         <span className="text-xs text-gray-600">
-                          {item.owner.averageRating.toFixed(1)} ({item.owner.totalReviews} reviews)
+                          {Number(item.owner.averageRating).toFixed(1)} ({item.owner.totalReviews} reviews)
                         </span>
                       </div>
                     )}
@@ -203,7 +203,7 @@ const Transactions = () => {
                     <div className="flex items-center gap-1">
                       <span className="text-yellow-400">⭐</span>
                       <span className="text-xs text-gray-600">
-                        {(
+                        {Number(
                           item.reviews.reduce((sum, r) => sum + r.rating, 0) /
                           item.reviews.length
                         ).toFixed(1)}{" "}

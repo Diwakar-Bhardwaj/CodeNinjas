@@ -36,6 +36,8 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
 
     try {
       setLoading(true);
+      console.log("📝 Submitting review:", { productId, rating, comment, token: token ? "✓ present" : "✗ missing" });
+      
       const response = await axios.post(
         `http://localhost:5000/api/products/${productId}/review`,
         { rating, comment },
@@ -47,6 +49,8 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
         }
       );
 
+      console.log("✅ Review submitted successfully:", response.data);
+      
       setSuccess("Review added successfully!");
       setRating(0);
       setComment("");
@@ -57,16 +61,19 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
 
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      const errorMsg = err.response?.data?.msg || err.message || "Failed to add review";
+      console.error("❌ Review submission error:", err);
+      console.error("Error response:", err.response?.data);
+      
+      const errorMsg = err.response?.data?.msg || err.response?.data?.error || err.message || "Failed to add review";
       
       if (err.response?.status === 401) {
         setError("Session expired. Please login again.");
         setTimeout(() => navigate("/login"), 2000);
+      } else if (err.response?.status === 500) {
+        setError(`Server error: ${errorMsg}`);
       } else {
         setError(errorMsg);
       }
-      
-      console.error("Review submission error:", err);
     } finally {
       setLoading(false);
     }

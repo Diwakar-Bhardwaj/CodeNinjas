@@ -4,16 +4,19 @@ import { FaStar } from "react-icons/fa";
 import AddToCartButton from "./AddToCartButton";
 
 const StarRating = ({ rating }) => {
+  // Ensure rating is a number
+  const numRating = Number(rating) || 0;
+  
   return (
     <div className="flex items-center gap-1">
       {[...Array(5)].map((_, i) => (
         <FaStar
           key={i}
-          className={i < Math.floor(rating) ? "text-yellow-400" : "text-gray-300"}
+          className={i < Math.floor(numRating) ? "text-yellow-400" : "text-gray-300"}
           size={14}
         />
       ))}
-      <span className="text-sm text-gray-600 ml-1">({rating.toFixed(1)})</span>
+      <span className="text-sm text-gray-600 ml-1">({Number(numRating).toFixed(1)})</span>
     </div>
   );
 };
@@ -26,10 +29,10 @@ const ProductCard = ({ product }) => {
     : "https://via.placeholder.com/300x300?text=No+Image";
 
   const ownerName = product.owner?.firstName || product.owner?.email?.split("@")[0] || "Unknown";
-  const avgRating = product.owner?.averageRating || 0;
+  const avgRating = Number(product.owner?.averageRating) || 0;
   const totalReviews = product.owner?.totalReviews || 0;
   const avgProductRating = product.reviews?.length
-    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1)
+    ? Number((product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1))
     : 0;
 
   return (

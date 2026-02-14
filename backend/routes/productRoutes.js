@@ -120,46 +120,81 @@ router.post("/:id/review", verifyToken, async (req, res) => {
   try {
     const { rating, comment } = req.body;
 
+    console.log("📝 Review submission:", { userId: req.userId, productId: req.params.id, rating, comment });
+
     if (!rating || rating < 1 || rating > 5) {
       return res.status(400).json({ msg: "Rating must be between 1 and 5" });
     }
 
-    const product = await Product.findById(req.params.id);
+    if (!comment || comment.trim().length === 0) {
+      return res.status(400).json({ msg: "Comment cannot be empty" });
+    }
+
+    // Fetch product with owner populated
+    let product = await Product.findById(req.params.id).populate("owner");
     if (!product) {
       return res.status(404).json({ msg: "Product not found" });
     }
 
+    console.log("📦 Product fetched:", { productId: product._id, owner: product.owner?._id });
+
+    // If product has no owner, return error
+    if (!product.owner || !product.owner._id) {
+      console.error("❌ Product has no owner assigned");
+      return res.status(400).json({ msg: "Product has no valid owner assigned. Cannot add review." });
+    }
+
+    // Create review object
     const review = {
       reviewer: req.userId,
-      rating,
-      comment,
+      rating: Number(rating),
+      comment: String(comment).trim(),
       createdAt: new Date(),
     };
 
+    // Add review to product
     product.reviews.push(review);
+    
+    console.log("📋 Review added to product array, saving...");
+    
+    // Save product with markModified to ensure reviews are saved
+    product.markModified("reviews");
     await product.save();
 
+    console.log("✅ Review saved to product");
+
     // Update owner's average rating
-    const owner = await User.findById(product.owner);
-    if (owner) {
+    if (product.owner && product.owner._id) {
       const allReviews = await Product.aggregate([
-        { $match: { owner: product.owner } },
+        { $match: { owner: product.owner._id } },
         { $unwind: "$reviews" },
         { $group: { _id: null, avgRating: { $avg: "$reviews.rating" }, count: { $sum: 1 } } },
       ]);
 
+      console.log("📊 Aggregated reviews:", allReviews);
+
       if (allReviews.length > 0) {
-        owner.averageRating = allReviews[0].avgRating;
-        owner.totalReviews = allReviews[0].count;
-        await owner.save();
+        const owner = await User.findById(product.owner._id);
+        if (owner) {
+          owner.averageRating = Number(allReviews[0].avgRating);
+          owner.totalReviews = Number(allReviews[0].count);
+          await owner.save();
+          console.log("✅ Owner rating updated:", { avg: owner.averageRating, count: owner.totalReviews });
+        }
       }
     }
 
-    await product.populate("reviews.reviewer", "email firstName lastName");
+    // Re-fetch product to get latest data
+    product = await Product.findById(req.params.id)
+      .populate("owner", "email firstName lastName profileDescription averageRating totalReviews")
+      .populate("reviews.reviewer", "email firstName lastName");
+    
+    console.log("✅ Review endpoint successful");
 
     res.json({ msg: "Review added successfully", product });
   } catch (err) {
-    console.error("❌ Add review failed:", err);
+    console.error("❌ Add review failed:", err.message);
+    console.error("Error stack:", err.stack);
     res.status(500).json({ msg: "Add review failed", error: err.message });
   }
 });

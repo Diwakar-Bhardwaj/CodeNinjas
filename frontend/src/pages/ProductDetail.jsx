@@ -5,16 +5,19 @@ import ReviewForm from "../components/ReviewForm";
 import AddToCartButton from "../components/AddToCartButton";
 
 const StarRating = ({ rating }) => {
+  // Ensure rating is a number
+  const numRating = Number(rating) || 0;
+  
   return (
     <div className="flex items-center gap-1">
       {[...Array(5)].map((_, i) => (
         <FaStar
           key={i}
-          className={i < Math.floor(rating) ? "text-yellow-400" : "text-gray-300"}
+          className={i < Math.floor(numRating) ? "text-yellow-400" : "text-gray-300"}
           size={18}
         />
       ))}
-      <span className="text-lg text-gray-600">({rating.toFixed(1)})</span>
+      <span className="text-lg text-gray-600">({Number(numRating).toFixed(1)})</span>
     </div>
   );
 };
@@ -75,7 +78,7 @@ const ProductDetail = () => {
   const imageUrl = product.imageUrl || (product.image ? `http://localhost:5000/uploads/${product.image}` : "https://via.placeholder.com/500x500?text=No+Image");
   const ownerName = product.owner?.firstName || product.owner?.email?.split("@")[0] || "Unknown";
   const avgProductRating = product.reviews?.length
-    ? (product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1)
+    ? Number((product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length).toFixed(1))
     : 0;
 
   return (
