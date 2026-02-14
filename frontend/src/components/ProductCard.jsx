@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaStar } from 'react-icons/fa';
 import { formatPrice } from '../utils/formatPrice';
-import ShareButton from './product/ShareButton';
 
 const ProductCard = ({ product }) => {
 
